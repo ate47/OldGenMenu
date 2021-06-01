@@ -1,0 +1,22 @@
+modLoader="javafml" #mandatory
+loaderVersion="[36,)" #mandatory This is typically bumped every Minecraft version by Forge. See our download page for lists of versions.
+license="GPL3"
+#issueTrackerURL="https://change.me.to.your.issue.tracker.example.invalid/" #todo
+[[mods]] #mandatory
+    modId="oldgenmenu"
+    version="1.0.0" #mandatory
+    displayName="Old gen menu"
+    displayURL="https://www.reddit.com/r/Minecraft/comments/np7oen/can_someone_mod_this_back_in/"
+    # logoFile="examplemod.png" #todo
+    credits="Asked by u/Cable_0kress on Reddit, but the credits are to 4J Studios"
+    authors="ATE47, u/Cable_0kress, 4J Studios"
+    description='''
+    The Xbox 360 / PS3 crafting menu
+    '''
+
+[[dependencies.oldgenmenu]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.16,1.17)"
+    ordering="NONE"
+    side="BOTH"

@@ -1,0 +1,18 @@
+{
+	"oldgenmenu.menu": "Old gen menu",
+	"oldgenmenu.open": "Open oldgen menu",
+	"oldgenmenu.open.little": "OG",
+	
+	"oldgenmenu.menu.structures": "Structures",
+	"oldgenmenu.menu.tools": "Tools and weapons",
+	"oldgenmenu.menu.food": "Food",
+	"oldgenmenu.menu.armors": "Armors",
+	"oldgenmenu.menu.redstone": "Redstone",
+	"oldgenmenu.menu.transport": "Transport",
+	"oldgenmenu.menu.miscellaneous": "Miscellaneous",
+
+	"key.oldgenmenu.next": "Next item",
+	"key.oldgenmenu.last": "Last item",
+	"key.oldgenmenu.up": "Next item (up)",
+	"key.oldgenmenu.down": "Last item (down)"
+}
