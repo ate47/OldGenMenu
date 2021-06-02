@@ -18,6 +18,10 @@ public class RenderUtils {
 	private RenderUtils() {
 	}
 
+	public static boolean isIn(int mouseX, int mouseY, int x, int y, int w, int h) {
+		return mouseX >= x && mouseY >= y && mouseX <= x + w && mouseY <= y + h;
+	}
+
 	/**
 	 * Render an itemstack on the screen with a particular size
 	 * 
@@ -139,17 +143,44 @@ public class RenderUtils {
 		RenderSystem.color3f(r, g, b);
 	}
 
+	public static void color(int color) {
+		// add alpha
+		if ((color & 0xff000000) == 0)
+			color |= 0xff000000;
+		color4f(((color >> 16) & 0xff) / 256f, ((color >> 8) & 0xff) / 256f, (color & 0xff) / 256f,
+				((color >> 24) & 0xff) / 256f);
+	}
+
 	public static void renderText(ResourceLocation resource, int x, int y, int w, int h) {
+		renderText(resource, x, y, w, h, 0xffffffff);
+	}
+	public static void renderText(ResourceLocation resource, int x, int y, int w, int h, int color) {
 		RenderSystem.enableAlphaTest();
 		Tessellator tessellator = Tessellator.getInstance();
 		BufferBuilder bufferbuilder = tessellator.getBuilder();
 		Minecraft.getInstance().getTextureManager().bind(resource);
-		RenderUtils.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+		RenderUtils.color(color);
 		bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX);
 		bufferbuilder.vertex(x, y, 0.0D).uv(0, 0).endVertex();
 		bufferbuilder.vertex(x, y + h, 0.0D).uv(0, 1).endVertex();
 		bufferbuilder.vertex(x + w, y + h, 0.0D).uv(1, 1).endVertex();
 		bufferbuilder.vertex(x + w, y, 0.0D).uv(1, 0).endVertex();
+		tessellator.end();
+	}
+
+	public static void renderFill(int x, int y, int w, int h, int color) {
+		RenderSystem.enableAlphaTest();
+		Tessellator tessellator = Tessellator.getInstance();
+		BufferBuilder bufferbuilder = tessellator.getBuilder();
+		float r = ((color << 16) & 0xff) / 256f;
+		float g = ((color << 8) & 0xff) / 256f;
+		float b = (color & 0xff) / 256f;
+		float a = ((color << 24) & 0xff) / 256f;
+		bufferbuilder.begin(7, DefaultVertexFormats.POSITION_COLOR);
+		bufferbuilder.vertex(x, y, 0.0D).color(r, g, b, a).endVertex();
+		bufferbuilder.vertex(x, y + h, 0.0D).color(r, g, b, a).endVertex();
+		bufferbuilder.vertex(x + w, y + h, 0.0D).color(r, g, b, a).endVertex();
+		bufferbuilder.vertex(x + w, y, 0.0D).color(r, g, b, a).endVertex();
 		tessellator.end();
 	}
 
