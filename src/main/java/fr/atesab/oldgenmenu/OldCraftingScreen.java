@@ -4,6 +4,8 @@ import java.util.List;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 
+import org.lwjgl.glfw.GLFW;
+
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.inventory.ContainerScreen;
 import net.minecraft.client.gui.widget.button.Button;
@@ -33,6 +35,8 @@ public class OldCraftingScreen extends Screen {
 	private int top = 0;
 	private OldGenMenuMod mod;
 	private CraftingInventorySystem system;
+	private SlideButtonWidget leftArrow;
+	private SlideButtonWidget rightArrow;
 
 	public OldCraftingScreen(RecipeBookContainer<CraftingInventory> recipeBookContainer, OldGenMenuMod mod) {
 		super(new TranslationTextComponent("oldgenmenu.menu"));
@@ -99,38 +103,35 @@ public class OldCraftingScreen extends Screen {
 				&& minecraft.options.keyLeft.getKey().getValue() == key) {
 			// last item
 			system.lastGroup();
-			return true;
 		} else if (minecraft.options.keyRight.getKey().getType() == InputMappings.Type.KEYSYM
 				&& minecraft.options.keyRight.getKey().getValue() == key) {
 			// next item
 			system.nextGroup();
-			return true;
 		} else if (mod.getNextPageKey().getKey().getType() == InputMappings.Type.KEYSYM
 				&& mod.getNextPageKey().getKey().getValue() == key) {
 			// last item
 			system.getSysGroup().lastItem();
-			return true;
 		} else if (mod.getLastPageKey().getKey().getType() == InputMappings.Type.KEYSYM
 				&& mod.getLastPageKey().getKey().getValue() == key) {
 			// next item
 			system.getSysGroup().nextItem();
-			return true;
 		} else if (mod.getNextPageUp().getKey().getType() == InputMappings.Type.KEYSYM
 				&& mod.getNextPageUp().getKey().getValue() == key) {
 			// last item
 			CraftingInventorySystemTab tab = system.getSysGroup().getSelected();
 			if (tab != null)
 				tab.nextItem();
-			return true;
 		} else if (mod.getLastPageDown().getKey().getType() == InputMappings.Type.KEYSYM
 				&& mod.getLastPageDown().getKey().getValue() == key) {
 			// next item
 			CraftingInventorySystemTab tab = system.getSysGroup().getSelected();
 			if (tab != null)
 				tab.lastItem();
-			return true;
-		}
-		return super.keyPressed(key, mouseX, mouseY);
+		} else
+			return super.keyPressed(key, mouseX, mouseY);
+
+		updateArrowVisibility();
+		return true;
 	}
 
 	@Override
@@ -140,15 +141,31 @@ public class OldCraftingScreen extends Screen {
 			system.getSysGroup().selectVisible((int) (mouseX - leftObj) / 16);
 			return true;
 		}
-		return super.mouseClicked(mouseX, mouseY, mouseButton);
+		if (super.mouseClicked(mouseX, mouseY, mouseButton)) {
+			updateArrowVisibility();
+			return true;
+		}
+		return false;
 	}
 
 	@Override
 	public boolean mouseScrolled(double mouseX, double mouseY, double factor) {
-		if (factor > 0) {
-			system.getSysGroup().nextItem();
+		if (InputMappings.isKeyDown(minecraft.getWindow().getWindow(), GLFW.GLFW_KEY_LEFT_SHIFT)) {
+			if (factor < 0) {
+				CraftingInventorySystemTab tab = system.getSysGroup().getSelected();
+				if (tab != null)
+					tab.lastItem();
+			} else {
+				CraftingInventorySystemTab tab = system.getSysGroup().getSelected();
+				if (tab != null)
+					tab.nextItem();
+			}
 		} else {
-			system.getSysGroup().lastItem();
+			if (factor < 0) {
+				system.getSysGroup().nextItem();
+			} else {
+				system.getSysGroup().lastItem();
+			}
 		}
 		return super.mouseScrolled(mouseX, mouseY, factor);
 	}
@@ -168,11 +185,15 @@ public class OldCraftingScreen extends Screen {
 			system.reloadSystem();
 			system.loadSize(recipeBookContainer.getGridWidth(), recipeBookContainer.getGridHeight());
 		}));
-		addButton(new SlideButtonWidget(left + 3, top + 28, 8, 16, PAGE_BEFORE_SELECTED, PAGE_BEFORE,
-				b -> system.getSysGroup().lastItem()));
-		addButton(new SlideButtonWidget(left + 219, top + 28, 8, 16, PAGE_AFTER_SELECTED, PAGE_AFTER,
-				b -> system.getSysGroup().nextItem()));
+		leftArrow = addButton(new SlideButtonWidget(left + 3, top + 28, 8, 16, PAGE_BEFORE_SELECTED, PAGE_BEFORE,
+				b -> system.getSysGroup().lastPage()));
+		rightArrow = addButton(new SlideButtonWidget(left + 219, top + 28, 8, 16, PAGE_AFTER_SELECTED, PAGE_AFTER,
+				b -> system.getSysGroup().nextPage()));
+		updateArrowVisibility();
 		super.init();
 	}
 
+	private void updateArrowVisibility() {
+		leftArrow.visible = rightArrow.visible = system.getSysGroup().showPageArrows();
+	}
 }

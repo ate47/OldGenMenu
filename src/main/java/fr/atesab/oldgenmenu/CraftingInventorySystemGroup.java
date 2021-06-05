@@ -106,6 +106,44 @@ public class CraftingInventorySystemGroup {
 		}
 	}
 
+	private int mod(int a, int b) {
+		while (a < 0)
+			a += b;
+		return a % b;
+	}
+
+	/**
+	 * Next tab
+	 */
+	public void nextPage() {
+		if (!tabsInternal.isEmpty() && showPageArrows()) {
+			getSelected().selected = false;
+			int page = mod(selected / PAGE_SIZE + 1,
+					tabsUsable.size() / PAGE_SIZE + (tabsUsable.size() % PAGE_SIZE == 0 ? 0 : 1));
+			int delta = selected % PAGE_SIZE;
+			selected = Math.min(page * PAGE_SIZE + delta, tabsUsable.size() - 1);
+			getSelected().selected = true;
+		}
+	}
+
+	/**
+	 * Last tab
+	 */
+	public void lastPage() {
+		if (!tabsInternal.isEmpty() && showPageArrows()) {
+			getSelected().selected = false;
+			int page = mod(selected / PAGE_SIZE - 1,
+					tabsUsable.size() / PAGE_SIZE + (tabsUsable.size() % PAGE_SIZE == 0 ? 0 : 1));
+			int delta = selected % PAGE_SIZE;
+			selected = Math.min(page * PAGE_SIZE + delta, tabsUsable.size() - 1);
+			getSelected().selected = true;
+		}
+	}
+
+	public boolean showPageArrows() {
+		return tabsUsable.size() > PAGE_SIZE;
+	}
+
 	/**
 	 * @return the group
 	 */
