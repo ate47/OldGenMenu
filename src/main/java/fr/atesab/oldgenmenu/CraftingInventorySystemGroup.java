@@ -112,6 +112,10 @@ public class CraftingInventorySystemGroup {
 		return a % b;
 	}
 
+	public int getSelectedIndex() {
+		return selected;
+	}
+
 	/**
 	 * Next tab
 	 */

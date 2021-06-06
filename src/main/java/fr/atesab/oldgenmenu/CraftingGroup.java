@@ -5,13 +5,18 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
 
+import fr.atesab.oldgenmenu.renderer.ITabRenderer;
+import fr.atesab.oldgenmenu.renderer.ItemStackTabRenderer;
+import fr.atesab.oldgenmenu.renderer.TextureTabRenderer;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 
 public class CraftingGroup {
+	public static final ResourceLocation OLDGEN_ICONS = new ResourceLocation("textures/gui/oldgen/icons.png");
 	private static int idCounter = 0;
 	private static final List<CraftingGroup> GROUPS_INTERNAL = new ArrayList<>();
 	public static final List<CraftingGroup> GROUPS = Collections.unmodifiableList(GROUPS_INTERNAL);
@@ -26,24 +31,28 @@ public class CraftingGroup {
 
 	static {
 		// order is important
-		STRUCTURES = new CraftingGroup("oldgenmenu.menu.structures", new ItemStack(Blocks.OAK_PLANKS));
-		TOOLS = new CraftingGroup("oldgenmenu.menu.tools", new ItemStack(Items.IRON_PICKAXE));
-		FOOD = new CraftingGroup("oldgenmenu.menu.food", new ItemStack(Items.BREAD));
-		ARMORS = new CraftingGroup("oldgenmenu.menu.armors", new ItemStack(Items.NETHERITE_CHESTPLATE));
-		REDSTONE = new CraftingGroup("oldgenmenu.menu.redstone", new ItemStack(Items.REDSTONE));
-		TRANSPORT = new CraftingGroup("oldgenmenu.menu.transport", new ItemStack(Blocks.RAIL));
-		MISCELLANEOUS = new CraftingGroup("oldgenmenu.menu.miscellaneous", new ItemStack(Items.PAINTING));
+		STRUCTURES = new CraftingGroup("oldgenmenu.menu.structures",
+				new ItemStackTabRenderer(new ItemStack(Blocks.OAK_PLANKS)));
+		TOOLS = new CraftingGroup("oldgenmenu.menu.tools", new TextureTabRenderer(OLDGEN_ICONS, 0, 0, 4, 4));
+		FOOD = new CraftingGroup("oldgenmenu.menu.food", new TextureTabRenderer(OLDGEN_ICONS, 1, 0, 4, 4));
+		ARMORS = new CraftingGroup("oldgenmenu.menu.armors", new TextureTabRenderer(OLDGEN_ICONS, 2, 0, 4, 4));
+		REDSTONE = new CraftingGroup("oldgenmenu.menu.redstone",
+				new ItemStackTabRenderer(new ItemStack(Items.REDSTONE)));
+		TRANSPORT = new CraftingGroup("oldgenmenu.menu.transport",
+				new ItemStackTabRenderer(new ItemStack(Blocks.RAIL)));
+		MISCELLANEOUS = new CraftingGroup("oldgenmenu.menu.miscellaneous",
+				new ItemStackTabRenderer(new ItemStack(Items.PAINTING)));
 	}
 
 	private ITextComponent description;
-	private ItemStack icon;
+	private ITabRenderer renderer;
 	public boolean selected = false;
 	private int id;
 
-	public CraftingGroup(String descriptionId, ItemStack icon) {
+	public CraftingGroup(String descriptionId, ITabRenderer renderer) {
 		this.id = ++idCounter;
 		this.description = new TranslationTextComponent(descriptionId);
-		this.icon = icon;
+		this.renderer = renderer;
 		GROUPS_INTERNAL.add(this);
 	}
 
@@ -54,15 +63,15 @@ public class CraftingGroup {
 		return id;
 	}
 
-	public CraftingGroup(String description, Supplier<ItemStack> icon) {
+	public CraftingGroup(String description, Supplier<ITabRenderer> icon) {
 		this(description, icon.get());
 	}
 
 	/**
 	 * @return the icon
 	 */
-	public ItemStack getIcon() {
-		return icon;
+	public ITabRenderer getIcon() {
+		return renderer;
 	}
 
 	/**

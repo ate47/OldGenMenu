@@ -50,6 +50,10 @@ class CraftingInventorySystemTab {
 		return itemsVisible.size() != 1;
 	}
 
+	public int getSelectedIndex() {
+		return index;
+	}
+
 	private ItemStorage get(int index) {
 		return itemsVisible.get((index + itemsVisible.size()) % itemsVisible.size());
 	}
@@ -84,10 +88,11 @@ class CraftingInventorySystemTab {
 		return !itemsVisible.isEmpty();
 	}
 
-	public boolean render(int x, int y, RecipeBookContainer<?> inv) {
+	public ItemStorage render(int x, int y, RecipeBookContainer<?> inv, int mouseX, int mouseY) {
 		int size = getViewSize();
+		ItemStorage outStorage = null;
 		if (size == 0)
-			return false; // at least one element
+			return outStorage; // at least one element
 		if (selected) {
 			int top;
 			int bottom;
@@ -119,13 +124,22 @@ class CraftingInventorySystemTab {
 				for (int i = 0; i < storages.length; i++) {
 					RenderUtils.renderText(MULTI_SLOT, x - 4, top + i * 16, 24, 16);
 					storages[i].renderStack(inv, x + 2, top + i * 16 + 2, 12);
+					if (RenderUtils.isIn(mouseX, mouseY, x + 2, top + i * 16 + 2, 12, 12))
+						outStorage = storages[i];
 				}
-			} else
-				getSelected().renderStack(inv, x + 2, y + 2, 12);
+			} else {
+				ItemStorage storage = getSelected();
+				storage.renderStack(inv, x + 2, y + 2, 12);
+				if (RenderUtils.isIn(mouseX, mouseY, x + 2, y + 2, 12, 12))
+					outStorage = storage;
+			}
 			RenderUtils.renderText(MULTI_SLOT_SELECTED, x - 4, y - 1, 24, 18);
 		} else {
-			getSelected().renderStack(inv, x + 2, y + 2, 12);
+			ItemStorage storage = getSelected();
+			storage.renderStack(inv, x + 2, y + 2, 12);
+			if (RenderUtils.isIn(mouseX, mouseY, x + 2, y + 2, 12, 12))
+				outStorage = storage;
 		}
-		return true;
+		return outStorage;
 	}
 }

@@ -15,7 +15,9 @@ import net.minecraft.block.AbstractPressurePlateBlock;
 import net.minecraft.block.AbstractRailBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.CarpetBlock;
+import net.minecraft.block.ConcretePowderBlock;
 import net.minecraft.block.DoorBlock;
+import net.minecraft.block.FenceBlock;
 import net.minecraft.block.FenceGateBlock;
 import net.minecraft.block.PistonBlock;
 import net.minecraft.block.PressurePlateBlock;
@@ -32,6 +34,7 @@ import net.minecraft.item.ArmorItem;
 import net.minecraft.item.ArrowItem;
 import net.minecraft.item.AxeItem;
 import net.minecraft.item.BannerItem;
+import net.minecraft.item.BannerPatternItem;
 import net.minecraft.item.BedItem;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.BoatItem;
@@ -39,6 +42,7 @@ import net.minecraft.item.DyeItem;
 import net.minecraft.item.ElytraItem;
 import net.minecraft.item.FishingRodItem;
 import net.minecraft.item.HoeItem;
+import net.minecraft.item.HorseArmorItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
@@ -50,7 +54,10 @@ import net.minecraft.item.SaddleItem;
 import net.minecraft.item.ShieldItem;
 import net.minecraft.item.ShootableItem;
 import net.minecraft.item.ShovelItem;
+import net.minecraft.item.SignItem;
+import net.minecraft.item.SoupItem;
 import net.minecraft.item.SwordItem;
+import net.minecraft.item.WallOrFloorItem;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.item.crafting.IRecipeType;
 
@@ -119,7 +126,7 @@ public class CraftingInventorySystem {
 		Set<Item> iSet = new HashSet<>();
 		iSet.addAll(Arrays.asList(items));
 		if (cls == null)
-			createCustomTab(g, i -> i instanceof BlockItem && cls.isInstance(((BlockItem) i).getBlock()));
+			createCustomTab(g, i -> iSet.contains(i));
 		else
 			createCustomTab(g,
 					i -> iSet.contains(i) || i instanceof BlockItem && cls.isInstance(((BlockItem) i).getBlock()));
@@ -139,6 +146,8 @@ public class CraftingInventorySystem {
 
 	private void loadRecipe(IRecipe<?> recipe) {
 		ItemStack stack = recipe.getResultItem();
+		if (stack.getItem() == Items.AIR)
+			return;
 		crafts.put(stack, recipe);
 		Item it = stack.getItem();
 		CraftingGroup g = tryFindByGroup(it);
@@ -185,21 +194,36 @@ public class CraftingInventorySystem {
 				Items.QUARTZ_PILLAR, Items.QUARTZ_BRICKS, Items.STONE_BRICKS, Items.MOSSY_STONE_BRICKS,
 				Items.CRACKED_STONE_BRICKS, Items.CHISELED_STONE_BRICKS, Items.MOSSY_COBBLESTONE,
 				Items.RED_NETHER_BRICKS, Items.DIORITE, Items.GRANITE, Items.ANDESITE, Items.POLISHED_ANDESITE,
-				Items.POLISHED_DIORITE, Items.POLISHED_GRANITE, Items.PURPUR_BLOCK);
-		createCustomTabB(CraftingGroup.STRUCTURES, WallBlock.class, Items.SANDSTONE, Items.RED_SANDSTONE,
-				Items.SMOOTH_SANDSTONE, Items.SMOOTH_RED_SANDSTONE, Items.NETHER_BRICK, Items.COARSE_DIRT,
+				Items.POLISHED_DIORITE, Items.POLISHED_GRANITE, Items.PURPUR_BLOCK, Items.PURPUR_PILLAR,
+				Items.CHISELED_NETHER_BRICKS, Items.CRACKED_NETHER_BRICKS, Items.CHISELED_POLISHED_BLACKSTONE,
+				Items.CUT_RED_SANDSTONE, Items.POLISHED_BLACKSTONE_BRICKS, Items.CHISELED_SANDSTONE,
+				Items.CHISELED_RED_SANDSTONE);
+		createCustomTabC(CraftingGroup.STRUCTURES, null, Items.SANDSTONE, Items.RED_SANDSTONE, Items.SMOOTH_SANDSTONE,
+				Items.CUT_SANDSTONE, Items.SMOOTH_RED_SANDSTONE, Items.NETHER_BRICK, Items.COARSE_DIRT,
 				Items.PRISMARINE_BRICKS, Items.PRISMARINE_BRICKS, Items.SNOW_BLOCK, Items.SNOW, Items.CLAY, Items.BRICK,
 				Items.BONE_BLOCK);
+		createCustomTabB(CraftingGroup.STRUCTURES, WallBlock.class);
+
 		createCustomTabC(CraftingGroup.STRUCTURES, null, Items.CRAFTING_TABLE, Items.FURNACE, Items.ENCHANTING_TABLE,
-				Items.ANVIL, Items.BREWING_STAND);
+				Items.ANVIL, Items.BREWING_STAND, Items.FLETCHING_TABLE, Items.SMITHING_TABLE, Items.GRINDSTONE,
+				Items.SCAFFOLDING, Items.BLAST_FURNACE, Items.CARTOGRAPHY_TABLE);
 		createCustomTabC(CraftingGroup.STRUCTURES, null, Items.CHEST, Items.TRAPPED_CHEST, Items.ENDER_CHEST,
-				Items.SHULKER_BOX);
+				Items.SHULKER_BOX, Items.BARREL);
 		createCustomTab(CraftingGroup.STRUCTURES, matchRegexBlock(".*_wood"));
 
 		createCustomTabC(CraftingGroup.STRUCTURES, BedItem.class);
+		createCustomTabC(CraftingGroup.STRUCTURES, null, Items.IRON_BLOCK, Items.GOLD_BLOCK, Items.DIAMOND_BLOCK,
+				Items.EMERALD_BLOCK, Items.NETHERITE_BLOCK, Items.LAPIS_BLOCK, Items.COAL_BLOCK);
 		createCustomTabB(CraftingGroup.STRUCTURES, StairsBlock.class);
 		createCustomTabB(CraftingGroup.STRUCTURES, SlabBlock.class);
-		createCustomTabB(CraftingGroup.STRUCTURES, AbstractGlassBlock.class);
+		createCustomTabB(CraftingGroup.STRUCTURES, AbstractGlassBlock.class, Items.GLASS);
+		createCustomTabB(CraftingGroup.STRUCTURES, StainedGlassPaneBlock.class, Items.GLASS_PANE);
+		createCustomTabB(CraftingGroup.STRUCTURES, ConcretePowderBlock.class);
+
+		createCustomTabC(CraftingGroup.STRUCTURES, null, Items.PRISMARINE, Items.PRISMARINE_BRICKS,
+				Items.DARK_PRISMARINE, Items.PRISMARINE_WALL);
+		createCustomTabC(CraftingGroup.STRUCTURES, null, Items.ICE, Items.PACKED_ICE, Items.BLUE_ICE);
+		createCustomTabC(CraftingGroup.STRUCTURES, null, Items.GLOWSTONE, Items.GLOWSTONE_DUST, Items.SEA_LANTERN);
 
 		createCustomTabC(CraftingGroup.TOOLS, SwordItem.class);
 		createCustomTabC(CraftingGroup.TOOLS, PickaxeItem.class);
@@ -207,17 +231,34 @@ public class CraftingInventorySystem {
 		createCustomTabC(CraftingGroup.TOOLS, AxeItem.class);
 		createCustomTabC(CraftingGroup.TOOLS, HoeItem.class);
 
-		createCustomTabC(CraftingGroup.TOOLS, null, Items.FLINT_AND_STEEL, Items.SHEARS);
+		createCustomTabC(CraftingGroup.TOOLS, null, Items.FLINT_AND_STEEL, Items.SHEARS, Items.BUCKET);
 		createCustomTabC(CraftingGroup.TOOLS, ShootableItem.class);
 		createCustomTabC(CraftingGroup.TOOLS, ArrowItem.class);
 		createCustomTabC(CraftingGroup.TOOLS, null, Items.COMPASS, Items.CLOCK);
 		createCustomTabC(CraftingGroup.TOOLS, ShieldItem.class);
 		createCustomTabC(CraftingGroup.TOOLS, FishingRodItem.class);
 
+		createCustomTabC(CraftingGroup.FOOD, null, Items.GLASS_BOTTLE, Items.HONEY_BOTTLE, Items.HONEYCOMB,
+				Items.HONEY_BLOCK, Items.HONEYCOMB_BLOCK, Items.BEEHIVE);
+		createCustomTabC(CraftingGroup.FOOD, null, Items.COOKIE, Items.CAKE);
+		createCustomTabC(CraftingGroup.FOOD, null, Items.SUGAR, Items.FERMENTED_SPIDER_EYE);
+		createCustomTabC(CraftingGroup.FOOD, null, Items.GOLDEN_CARROT);
+		createCustomTabC(CraftingGroup.FOOD, null, Items.BONE_MEAL);
+		createCustomTabC(CraftingGroup.FOOD, null, Items.KELP, Items.DRIED_KELP_BLOCK, Items.DRIED_KELP);
+		createCustomTabC(CraftingGroup.FOOD, SoupItem.class, Items.BOWL);
+		createCustomTabC(CraftingGroup.FOOD, null, Items.WHEAT, Items.WHEAT_SEEDS, Items.HAY_BLOCK, Items.BREAD);
+		createCustomTabC(CraftingGroup.FOOD, null, Items.PUMPKIN, Items.PUMPKIN_PIE, Items.JACK_O_LANTERN,
+				Items.PUMPKIN_SEEDS);
+		createCustomTabC(CraftingGroup.FOOD, null, Items.MELON, Items.MELON_SEEDS, Items.MELON_SLICE,
+				Items.GLISTERING_MELON_SLICE);
+		createCustomTabC(CraftingGroup.FOOD, null, Items.LEATHER);
+		createCustomTabC(CraftingGroup.FOOD, null, Items.APPLE, Items.GOLDEN_APPLE, Items.ENCHANTED_GOLDEN_APPLE);
+
 		createCustomTab(CraftingGroup.ARMORS, matchArmorItem(EquipmentSlotType.HEAD));
 		createCustomTab(CraftingGroup.ARMORS, matchArmorItem(EquipmentSlotType.CHEST));
 		createCustomTab(CraftingGroup.ARMORS, matchArmorItem(EquipmentSlotType.LEGS));
 		createCustomTab(CraftingGroup.ARMORS, matchArmorItem(EquipmentSlotType.FEET));
+		createCustomTabC(CraftingGroup.ARMORS, HorseArmorItem.class);
 
 		createCustomTabB(CraftingGroup.TRANSPORT, AbstractRailBlock.class);
 		createCustomTabC(CraftingGroup.TRANSPORT, MinecartItem.class, Items.SADDLE, Items.ELYTRA);
@@ -238,12 +279,29 @@ public class CraftingInventorySystem {
 		createCustomTabC(CraftingGroup.REDSTONE, null, Items.DISPENSER, Items.DROPPER, Items.OBSERVER);
 		createCustomTabC(CraftingGroup.REDSTONE, null, Items.TARGET, Items.TNT, Items.NOTE_BLOCK);
 
-		createCustomTab(CraftingGroup.MISCELLANEOUS, matchRegexBlock(".*_wool"));
-		createCustomTab(CraftingGroup.MISCELLANEOUS, matchRegexBlock(".*_terracotta"));
-		createCustomTabB(CraftingGroup.MISCELLANEOUS, CarpetBlock.class);
-		createCustomTabB(CraftingGroup.MISCELLANEOUS, StainedGlassPaneBlock.class);
+		createCustomTabC(CraftingGroup.MISCELLANEOUS, null, Items.CAMPFIRE, Items.COMPOSTER, Items.SMOKER,
+				Items.SOUL_CAMPFIRE, Items.CAULDRON, Items.LOOM, Items.STONECUTTER, Items.LODESTONE);
+		createCustomTabC(CraftingGroup.MISCELLANEOUS, null, Items.TORCH, Items.SOUL_LANTERN, Items.SOUL_TORCH,
+				Items.LANTERN);
+		createCustomTabC(CraftingGroup.MISCELLANEOUS, null, Items.IRON_INGOT, Items.GOLD_INGOT, Items.DIAMOND,
+				Items.EMERALD, Items.NETHERITE_INGOT, Items.LAPIS_LAZULI, Items.IRON_NUGGET, Items.GOLD_NUGGET,
+				Items.COAL);
 		createCustomTabC(CraftingGroup.MISCELLANEOUS, DyeItem.class);
 		createCustomTabC(CraftingGroup.MISCELLANEOUS, BannerItem.class);
+		createCustomTabC(CraftingGroup.MISCELLANEOUS, BannerPatternItem.class);
+		createCustomTabC(CraftingGroup.MISCELLANEOUS, SignItem.class, Items.ARMOR_STAND, Items.ITEM_FRAME,
+				Items.PAINTING);
+		createCustomTabB(CraftingGroup.MISCELLANEOUS, FenceBlock.class);
+		createCustomTabC(CraftingGroup.MISCELLANEOUS, null, Items.CONDUIT, Items.BEACON, Items.END_CRYSTAL);
+		createCustomTabC(CraftingGroup.MISCELLANEOUS, null, Items.ENDER_EYE, Items.BLAZE_POWDER, Items.FIRE_CHARGE);
+		createCustomTabC(CraftingGroup.MISCELLANEOUS, null, Items.MAGMA_CREAM, Items.SLIME_BALL, Items.SLIME_BLOCK);
+		createCustomTab(CraftingGroup.MISCELLANEOUS, matchRegexBlock(".*_terracotta"));
+		createCustomTab(CraftingGroup.MISCELLANEOUS, matchRegexBlock(".*_wool"));
+		createCustomTabB(CraftingGroup.MISCELLANEOUS, CarpetBlock.class);
+		createCustomTabC(CraftingGroup.MISCELLANEOUS, null, Items.PAPER, Items.BOOK, Items.BOOKSHELF,
+				Items.WRITABLE_BOOK, Items.WRITABLE_BOOK);
+		createCustomTabC(CraftingGroup.MISCELLANEOUS, null, Items.MAP);
+		createCustomTabC(CraftingGroup.MISCELLANEOUS, null, Items.FLOWER_POT);
 
 		Minecraft.getInstance().getConnection().getRecipeManager().getRecipes().stream()
 				.filter(c -> c.getType() == IRecipeType.CRAFTING).forEach(this::loadRecipe);
@@ -265,6 +323,10 @@ public class CraftingInventorySystem {
 		getSelected().selected = false;
 		selected = (selected + 1) % CraftingGroup.GROUPS.size();
 		getSelected().selected = true;
+	}
+
+	public int getSelectedIndex() {
+		return selected;
 	}
 
 	public void lastGroup() {

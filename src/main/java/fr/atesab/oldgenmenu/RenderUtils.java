@@ -154,17 +154,23 @@ public class RenderUtils {
 	public static void renderText(ResourceLocation resource, int x, int y, int w, int h) {
 		renderText(resource, x, y, w, h, 0xffffffff);
 	}
+
 	public static void renderText(ResourceLocation resource, int x, int y, int w, int h, int color) {
+		renderText(resource, x, y, w, h, 0f, 0f, 1f, 1f, color);
+	}
+
+	public static void renderText(ResourceLocation resource, int x, int y, int w, int h, float u, float v, float uWidth,
+			float vHeight, int color) {
 		RenderSystem.enableAlphaTest();
 		Tessellator tessellator = Tessellator.getInstance();
 		BufferBuilder bufferbuilder = tessellator.getBuilder();
 		Minecraft.getInstance().getTextureManager().bind(resource);
 		RenderUtils.color(color);
 		bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX);
-		bufferbuilder.vertex(x, y, 0.0D).uv(0, 0).endVertex();
-		bufferbuilder.vertex(x, y + h, 0.0D).uv(0, 1).endVertex();
-		bufferbuilder.vertex(x + w, y + h, 0.0D).uv(1, 1).endVertex();
-		bufferbuilder.vertex(x + w, y, 0.0D).uv(1, 0).endVertex();
+		bufferbuilder.vertex(x, y, 0.0D).uv(u, v).endVertex();
+		bufferbuilder.vertex(x, y + h, 0.0D).uv(u, v + vHeight).endVertex();
+		bufferbuilder.vertex(x + w, y + h, 0.0D).uv(u + uWidth, v + vHeight).endVertex();
+		bufferbuilder.vertex(x + w, y, 0.0D).uv(u + uWidth, v).endVertex();
 		tessellator.end();
 	}
 

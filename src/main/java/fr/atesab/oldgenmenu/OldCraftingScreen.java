@@ -6,18 +6,19 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 
 import org.lwjgl.glfw.GLFW;
 
-import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.audio.SimpleSound;
 import net.minecraft.client.gui.screen.inventory.ContainerScreen;
 import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.client.gui.widget.button.ImageButton;
 import net.minecraft.client.util.InputMappings;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.CraftingInventory;
 import net.minecraft.inventory.container.RecipeBookContainer;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundEvents;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 
-public class OldCraftingScreen extends Screen {
+public class OldCraftingScreen<T extends RecipeBookContainer<CraftingInventory>> extends ContainerScreen<T> {
 	public static final ResourceLocation OLDGEN_MENU = new ResourceLocation("textures/gui/oldgen/oldgen.png");
 	public static final ResourceLocation SLOT = new ResourceLocation("textures/gui/oldgen/slot.png");
 	public static final ResourceLocation WARNING = new ResourceLocation("textures/gui/oldgen/warning.png");
@@ -29,7 +30,6 @@ public class OldCraftingScreen extends Screen {
 			"textures/gui/oldgen/page_after_selected.png");
 	private static final int GUI_WIDTH = 230;
 	private static final int GUI_HEIGHT = 150;
-	private RecipeBookContainer<CraftingInventory> recipeBookContainer;
 
 	private int left = 0;
 	private int top = 0;
@@ -38,9 +38,8 @@ public class OldCraftingScreen extends Screen {
 	private SlideButtonWidget leftArrow;
 	private SlideButtonWidget rightArrow;
 
-	public OldCraftingScreen(RecipeBookContainer<CraftingInventory> recipeBookContainer, OldGenMenuMod mod) {
-		super(new TranslationTextComponent("oldgenmenu.menu"));
-		this.recipeBookContainer = recipeBookContainer;
+	public OldCraftingScreen(T menu, PlayerInventory inventory, OldGenMenuMod mod) {
+		super(menu, inventory, new TranslationTextComponent("oldgenmenu.menu"));
 		this.mod = mod;
 		this.system = mod.system;
 	}
@@ -57,14 +56,19 @@ public class OldCraftingScreen extends Screen {
 		RenderUtils.drawCenteredTextComponentScaled(matrixStack, left + GUI_WIDTH / 2, top + 12, 10,
 				system.getSelected().getDescription(), 0x5e5e5e);
 
-		int gridWidth = recipeBookContainer.getGridWidth();
-		int gridHeight = recipeBookContainer.getGridHeight();
+		int gridWidth = menu.getGridWidth();
+		int gridHeight = menu.getGridHeight();
+
+		ItemStorage hovered = null;
 
 		int tx = left + 11;
 		int ty = top + 28;
 		List<CraftingInventorySystemTab> a = system.getSysGroup().getVisibleTabs();
 		for (int i = 0; i < a.size(); i++) {
-			a.get(i).render(tx + i * 16, ty, recipeBookContainer);
+			ItemStorage storage = a.get(i).render(tx, ty, menu, mouseX, mouseY);
+			if (storage != null)
+				hovered = storage;
+			tx += 16;
 		}
 		CraftingInventorySystemTab tab = system.getSysGroup().getSelected();
 		if (tab != null) {
@@ -94,6 +98,10 @@ public class OldCraftingScreen extends Screen {
 			RenderUtils.renderText(SLOT, rx + i * 10, ry + 35, 10, 10);
 
 		super.render(matrixStack, mouseX, mouseY, partialTick);
+
+		if (hovered != null) {
+			renderTooltip(matrixStack, hovered.getItemStack(), mouseX, mouseY);
+		}
 	}
 
 	@Override
@@ -137,9 +145,32 @@ public class OldCraftingScreen extends Screen {
 	@Override
 	public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
 		int leftObj = left + 11;
-		if (mouseButton == 0 && RenderUtils.isIn((int) mouseX, (int) mouseY, leftObj, top + 28, 16 * 13, 16)) {
-			system.getSysGroup().selectVisible((int) (mouseX - leftObj) / 16);
-			return true;
+		if (mouseButton == 0) {
+			if (RenderUtils.isIn((int) mouseX, (int) mouseY, leftObj, top + 28, 16 * 13, 16)) {
+				system.getSysGroup().selectVisible((int) (mouseX - leftObj) / 16);
+				minecraft.getSoundManager().play(SimpleSound.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+				return true;
+			} else if (RenderUtils.isIn((int) mouseX, (int) mouseY, leftObj, top + 28 - 16, 16 * 13, 16)) { // top
+				int item = (int) (mouseX - leftObj) / 16;
+				CraftingInventorySystemGroup grp = system.getSysGroup();
+				if (grp.getSelectedIndex() == item) {
+					CraftingInventorySystemTab tab = grp.getSelected();
+					if (tab != null)
+						tab.nextItem();
+					minecraft.getSoundManager().play(SimpleSound.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+				}
+				return true;
+			} else if (RenderUtils.isIn((int) mouseX, (int) mouseY, leftObj, top + 28 + 16, 16 * 13, 16)) { // bottom
+				int item = (int) (mouseX - leftObj) / 16;
+				CraftingInventorySystemGroup grp = system.getSysGroup();
+				if (grp.getSelectedIndex() == item) {
+					CraftingInventorySystemTab tab = grp.getSelected();
+					if (tab != null)
+						tab.lastItem();
+					minecraft.getSoundManager().play(SimpleSound.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+				}
+				return true;
+			}
 		}
 		if (super.mouseClicked(mouseX, mouseY, mouseButton)) {
 			updateArrowVisibility();
@@ -172,9 +203,13 @@ public class OldCraftingScreen extends Screen {
 
 	@Override
 	protected void init() {
-		system.loadSize(recipeBookContainer.getGridWidth(), recipeBookContainer.getGridHeight());
+		system.loadSize(menu.getGridWidth(), menu.getGridHeight());
 		left = (width - GUI_WIDTH) / 2;
 		top = (height - GUI_HEIGHT) / 2;
+		this.imageWidth = GUI_WIDTH;
+		this.imageHeight = GUI_HEIGHT;
+		this.titleLabelY = height;
+		this.inventoryLabelY = height;
 		int leftTab = left + GUI_WIDTH / 2 - 32 * CraftingGroup.GROUPS.size() / 2;
 		int topTab = top - 32 + 3;
 		for (int i = 0; i < CraftingGroup.GROUPS.size(); i++) {
@@ -183,17 +218,24 @@ public class OldCraftingScreen extends Screen {
 		}
 		addButton(new Button(0, 0, 200, 20, new StringTextComponent("reload"), b -> {
 			system.reloadSystem();
-			system.loadSize(recipeBookContainer.getGridWidth(), recipeBookContainer.getGridHeight());
+			system.loadSize(menu.getGridWidth(), menu.getGridHeight());
 		}));
 		leftArrow = addButton(new SlideButtonWidget(left + 3, top + 28, 8, 16, PAGE_BEFORE_SELECTED, PAGE_BEFORE,
 				b -> system.getSysGroup().lastPage()));
 		rightArrow = addButton(new SlideButtonWidget(left + 219, top + 28, 8, 16, PAGE_AFTER_SELECTED, PAGE_AFTER,
 				b -> system.getSysGroup().nextPage()));
 		updateArrowVisibility();
+		this.leftPos = left;
+		this.topPos = leftTab;
 		super.init();
 	}
 
 	private void updateArrowVisibility() {
 		leftArrow.visible = rightArrow.visible = system.getSysGroup().showPageArrows();
+	}
+
+	@Override
+	protected void renderBg(MatrixStack p_230450_1_, float p_230450_2_, int p_230450_3_, int p_230450_4_) {
+
 	}
 }

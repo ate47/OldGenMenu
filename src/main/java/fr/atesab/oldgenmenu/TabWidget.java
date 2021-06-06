@@ -27,6 +27,6 @@ public class TabWidget extends AbstractButton {
 	public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTick) {
 		RenderUtils.color4f(1.0F, 1.0F, 1.0F, 1.0F);
 		RenderUtils.renderText(group.selected ? TAB_IN : TAB_OUT, x, y, width, height);
-		RenderUtils.renderItem(group.getIcon(), x + 8, y + 12 - (group.selected ? 1 : 0), 16);
+		group.getIcon().render(group, matrixStack, x + 8, y + 12 - (group.selected ? 1 : 0), 16, 16);
 	}
 }
